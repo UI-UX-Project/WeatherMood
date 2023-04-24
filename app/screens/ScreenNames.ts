@@ -1,1 +1,2 @@
 export const HOME_SCREEN = 'HOME_SCREEN';
+export const LOCATIONS_SCREEN = 'LOCATIONS_SCREEN';
