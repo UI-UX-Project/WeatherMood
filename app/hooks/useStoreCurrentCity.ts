@@ -14,10 +14,11 @@ export const useStoreCurrentCity = () => {
 
         if (status !== 'granted') return setReady('error');
 
-        const currentLocation = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Low });
+        const currentLocation = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Low,
+        });
 
         const { latitude, longitude } = currentLocation.coords;
-        console.log(latitude, longitude);
         const res = await ReverseGeocodingService.getCityName({ latitude, longitude });
 
         if (!res.ok) return setReady('error');

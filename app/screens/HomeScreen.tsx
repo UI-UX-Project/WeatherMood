@@ -2,9 +2,12 @@ import { WeatherData, WeatherService } from '@app/api/WeatherService';
 import AppContainer from '@app/components/layout/AppContainer';
 import { rf, rh, rw } from '@app/settings/theme/Layout';
 import { theme } from '@app/settings/theme/Theme';
-import { useGlobalStore } from '@app/store/GlobalState';
+import { useGlobalStore, useLocationsStore } from '@app/store/GlobalState';
 import React, { useEffect, useState } from 'react';
+import { Button } from 'react-native';
 import styled from 'styled-components/native';
+import { LOCATIONS_SCREEN } from './ScreenNames';
+import WeatherIcon from '@app/components/ui/WeatherIcon';
 
 // import { BlurView } from 'expo-blur';
 
@@ -57,9 +60,11 @@ const TopContainer = styled.View`
 
 // const House = styled.Image``;
 
-function HomeScreen() {
+function HomeScreen({ navigation: { navigate } }: any) {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const currentCity = useGlobalStore((state) => state.currentCity);
+
+  const resetLocations = useLocationsStore((state) => state.resetLocations);
 
   useEffect(() => {
     (async function () {
@@ -73,16 +78,27 @@ function HomeScreen() {
     })();
   }, [currentCity]);
 
+  const goToLocations = () => {
+    navigate(LOCATIONS_SCREEN);
+  };
+
   return (
     <AppContainer>
       <TopContainer>
         <City>{currentCity}</City>
         <Temperature>{weatherData?.current.temp_c}°</Temperature>
+        {weatherData?.current.condition && (
+          <WeatherIcon condition={weatherData?.current.condition.text} />
+        )}
         <CloudsText>{weatherData?.current.condition.text}</CloudsText>
         <HighLowText>
-          H:{weatherData?.forecast.forecastday[0].day.maxtemp_c}° L:{weatherData?.forecast.forecastday[0].day.mintemp_c}°
+          H:{weatherData?.forecast.forecastday[0].day.maxtemp_c}° L:
+          {weatherData?.forecast.forecastday[0].day.mintemp_c}°
         </HighLowText>
       </TopContainer>
+      <Button onPress={goToLocations} color={'white'} title='Locations' />
+      <Button onPress={resetLocations} color={'red'} title='Reset My Locations' />
+
       {/* <ImageContainer><House source={require('@app/assets/house.png')} resizeMode='contain' /> </ImageContainer> */}
       {/* <BlurContainer intensity={2} /> */}
     </AppContainer>
