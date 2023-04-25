@@ -1,8 +1,8 @@
 import { ApisauceInstance } from 'apisauce';
 
+import { WeatherData } from './WeatherService';
 import { client } from './createApiClient';
 import { LOCATION_API_URL } from './endpoints';
-import api_keys from '../../api.keys.json';
 
 export class LocationService {
   private static api: ApisauceInstance = client;
@@ -24,9 +24,6 @@ export interface Location {
   lng: number;
 }
 
-export interface LocationWeather {
-  name: string;
-  country: string;
-  lat: number;
-  lng: number;
+export interface LocationWeather extends Location {
+  weather: WeatherData | null;
 }

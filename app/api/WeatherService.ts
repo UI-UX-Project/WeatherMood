@@ -23,6 +23,12 @@ export class WeatherService {
       }
     );
   }
+
+  static async getWeatherForAll(locations: string[]) {
+    const promises = locations.map((location) => this.getWeather(location));
+    const result = await Promise.all(promises);
+    return result;
+  }
 }
 
 interface Location {

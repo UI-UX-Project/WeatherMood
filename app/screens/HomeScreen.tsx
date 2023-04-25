@@ -96,8 +96,8 @@ function HomeScreen({ navigation: { navigate } }: any) {
           {weatherData?.forecast.forecastday[0].day.mintemp_c}°
         </HighLowText>
       </TopContainer>
-      <Button onPress={goToLocations} color={'white'} title='Locations' />
-      <Button onPress={resetLocations} color={'red'} title='Reset My Locations' />
+      <Button onPress={goToLocations} color='white' title='Locations' />
+      <Button onPress={resetLocations} color='red' title='Reset My Locations' />
 
       {/* <ImageContainer><House source={require('@app/assets/house.png')} resizeMode='contain' /> </ImageContainer> */}
       {/* <BlurContainer intensity={2} /> */}
