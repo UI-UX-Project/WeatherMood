@@ -1,4 +1,5 @@
-import { LocationService } from '@app/api/LocationService';
+import { LocationService, LocationWeather } from '@app/api/LocationService';
+import { WeatherService } from '@app/api/WeatherService';
 import AppContainer from '@app/components/layout/AppContainer';
 import LocationCard from '@app/components/ui/LocationCard';
 import useDebounce from '@app/hooks/useDebounce';
@@ -9,19 +10,30 @@ import {
   ActivityIndicator,
   FlatList,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
-  TouchableWithoutFeedback,
+  TouchableOpacity,
   View,
+  TouchableWithoutFeedback,
 } from 'react-native';
 
-const LocationList = ({ locations, handleAdd, previewOnly }: any) => {
+const LocationList = ({ locations }: any) => {
+  return <FlatList data={locations} renderItem={({ item }) => <LocationCard location={item} />} />;
+};
+
+const ResultsList = ({ locations, handleAdd }: any) => {
   return (
     <FlatList
       data={locations}
       renderItem={({ item }) => (
-        <LocationCard location={item} previewOnly={previewOnly} handleAdd={handleAdd} />
+        <TouchableOpacity style={styles.result} onPress={() => handleAdd(item)}>
+          <View>
+            <Text style={styles.resultText}>{`${item.name}, ${item.country}`}</Text>
+          </View>
+        </TouchableOpacity>
       )}
     />
   );
@@ -30,9 +42,9 @@ const LocationList = ({ locations, handleAdd, previewOnly }: any) => {
 const SearchResults = ({ loading, results, handleAdd }: any) => {
   return (
     <View style={{ flex: 1 }}>
-      {loading && <ActivityIndicator animating={true} color='white' size={'large'} />}
+      {loading && <ActivityIndicator animating color='white' size='large' />}
 
-      {results.length > 0 && <LocationList locations={results} handleAdd={handleAdd} />}
+      {results.length > 0 && <ResultsList locations={results} handleAdd={handleAdd} />}
 
       {!loading && results.length === 0 && (
         <View style={styles.textContainer}>
@@ -46,10 +58,27 @@ const SearchResults = ({ loading, results, handleAdd }: any) => {
 const MyLocations = () => {
   const myLocations = useLocationsStore((state) => state.locations);
 
+  const [data, setData] = useState<LocationWeather[]>([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      const res = await WeatherService.getWeatherForAll(myLocations.map((l) => l.name));
+
+      const results: LocationWeather[] = myLocations.map((location, index) => ({
+        ...location,
+        weather: res[index].ok ? res[index].data : null,
+      }));
+
+      setData(results);
+    }
+
+    fetchData();
+  }, [myLocations]);
+
   return (
     <View style={{ flex: 1 }}>
-      {myLocations.length > 0 && <LocationList locations={myLocations} previewOnly={true} />}
-      {myLocations.length === 0 && (
+      {data.length > 0 && <LocationList locations={data} />}
+      {data.length === 0 && (
         <View style={styles.textContainer}>
           <Text style={styles.text}>No locations added</Text>
         </View>
@@ -94,32 +123,51 @@ function LocationsScreen({ navigation: { goBack } }: any) {
       setSearchMode(true);
       fetchData();
     } else {
-      setSearchMode(false);
       setLocations([]);
     }
   }, [debouncedSearch]);
 
+  const hasText = debouncedSearch && debouncedSearch.length > 0;
+
+  const handleBlur = () => {
+    if (!hasText) {
+      setSearchMode(false);
+    }
+  };
+
   return (
-    <AppContainer gradientBackground={true}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <AppContainer gradientBackground>
         <View style={{ flex: 1 }}>
           <Entypo name='chevron-left' size={30} color='white' onPress={goBack} />
+          <View style={styles.inner}>
+            <TextInput
+              onFocus={() => setSearchMode(true)}
+              onBlur={handleBlur}
+              style={styles.textInputStyle}
+              onChangeText={(text) => setSearch(text)}
+              value={search}
+              underlineColorAndroid='transparent'
+              placeholder='Search location...'
+              placeholderTextColor='lightgrey'
+            />
+            {!searchMode && <MyLocations />}
+            {searchMode && hasText && (
+              <SearchResults loading={loading} results={locations} handleAdd={handleAdd} />
+            )}
 
-          <TextInput
-            style={styles.textInputStyle}
-            onChangeText={(text) => setSearch(text)}
-            value={search}
-            underlineColorAndroid='transparent'
-            placeholder='Search location...'
-            placeholderTextColor={'lightgrey'}
-          />
-          {!searchMode && <MyLocations />}
-          {searchMode && (
-            <SearchResults loading={loading} results={locations} handleAdd={handleAdd} />
-          )}
+            {searchMode && !hasText && (
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={{ flex: 1 }} />
+              </TouchableWithoutFeedback>
+            )}
+          </View>
         </View>
-      </TouchableWithoutFeedback>
-    </AppContainer>
+      </AppContainer>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -127,6 +175,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexGrow: 1,
+  },
+  inner: {
+    padding: 15,
+    flex: 1,
   },
   textContainer: {
     flex: 1,
@@ -138,6 +190,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   textInputStyle: {
+    marginBottom: 20,
     height: 40,
     borderWidth: 1,
     paddingLeft: 20,
@@ -146,6 +199,16 @@ const styles = StyleSheet.create({
     color: 'white',
     borderColor: 'black',
     backgroundColor: '#2E335A',
+  },
+  result: {
+    width: '100%',
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: '#5936B4',
+    borderRadius: 10,
+  },
+  resultText: {
+    color: 'white',
   },
 });
 
