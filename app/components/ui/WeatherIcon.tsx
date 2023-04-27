@@ -21,7 +21,7 @@ const WeatherIcon = ({
     Thunder: require('@app/assets/conditions/thunder.png'),
     Fog: require('@app/assets/conditions/fog.png'),
     Drizzle: require('@app/assets/conditions/drizzle.png'),
-    Unknown: require('@app/assets/conditions/unknown.png'),
+    Unknown: require('@app/assets/conditions/sunny.png'),
   };
 
   const source = images[condition] !== undefined ? images[condition] : images['Unknown'];

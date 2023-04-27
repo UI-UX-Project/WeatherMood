@@ -5,59 +5,13 @@ import WeatherIcon from '@app/components/ui/WeatherIcon';
 import { rf, rh, rw } from '@app/settings/theme/Layout';
 import { theme } from '@app/settings/theme/Theme';
 import { useGlobalStore, useLocationsStore } from '@app/store/GlobalState';
-import BottomSheet from '@gorhom/bottom-sheet';
-import { BlurView } from 'expo-blur';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, View, StyleSheet } from 'react-native';
+import { Entypo } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import styled from 'styled-components/native';
-
-import { LOCATIONS_SCREEN } from './ScreenNames';
-
-const City = styled.Text`
-  color: white;
-  font-size: ${rf(5)}px;
-  font-family: ${theme.fonts.interRegular};
-`;
-
-const Temperature = styled.Text`
-  color: white;
-  font-size: ${rf(10)}px;
-  font-family: ${theme.fonts.interLight};
-  margin-vertical: ${rw(1)}px;
-`;
-
-const CloudsText = styled.Text`
-  color: #a5a7c1;
-  font-size: ${rf(2.8)}px;
-  font-family: ${theme.fonts.interBold};
-`;
-
-const HighLowText = styled.Text`
-  color: white;
-  font-size: ${rf(2.5)}px;
-  margin-top: ${rw(1)}px;
-`;
-
-const TopContainer = styled.View`
-  justify-content: space-evenly;
-  align-items: center;
-  height: ${rh(30)}px;
-  margin-top: ${rw(5)}px;
-  border-radius: 20px;
-  margin-bottom: ${rw(10)}px;
-`;
 
 const BottomSheetContainer = styled.View`
   flex: 1;
-`;
-
-const TabBar = styled.Image``;
-
-const TabBarContainer = styled.TouchableOpacity`
-  position: absolute;
-  bottom: 0;
-  left: ${rw(19)}px;
-  z-index: 10;
 `;
 
 const Divider = styled.View`
@@ -105,77 +59,34 @@ const ForecastTitleText = styled.Text`
 
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-function HomeScreen({ navigation: { navigate } }: any) {
-  const [buttonVisible, setButtonVisible] = useState(true);
+function WeatherInfoScreen({ navigation: { navigate, goBack } }: any) {
   const [forecast, setForecast] = useState<'hourly' | 'daily'>('hourly');
 
-  // ref
-  const bottomSheetRef = useRef<BottomSheet>(null);
-
-  // variables
-  const snapPoints = useMemo(() => ['38%', '85%'], []);
-
-  // callbacks
-  const handleSheetChanges = useCallback((index: number) => {
-    // console.log('handleSheetChanges', index);
-    index === 0 && setButtonVisible(true);
-    index === 1 && setButtonVisible(false);
-  }, []);
-
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const currentCity = useGlobalStore((state) => state.currentCity);
+  const selectedCity = useGlobalStore((state) => state.selectedCity);
 
   // const resetLocations = useLocationsStore((state) => state.resetLocations);
   const celsius = useLocationsStore((state) => state.celsius);
 
   useEffect(() => {
     (async function () {
-      if (!currentCity || currentCity === 'Loading...') return;
+      if (!selectedCity) return;
 
-      const res = await WeatherService.getWeather(currentCity);
+      const res = await WeatherService.getWeather(selectedCity);
 
       if (!res.ok) return;
 
       setWeatherData(res.data!);
     })();
-  }, [currentCity]);
-
-  const goToLocations = () => {
-    navigate(LOCATIONS_SCREEN);
-  };
+  }, [selectedCity]);
 
   return (
     <>
-      <AppContainer>
-        <TopContainer>
-          <City>{currentCity}</City>
-          <Temperature>{weatherData?.current[celsius ? 'temp_c' : 'temp_f']}°</Temperature>
-          {weatherData?.current.condition && (
-            <WeatherIcon condition={weatherData?.current.condition.text} />
-          )}
-          <CloudsText>{weatherData?.current.condition.text}</CloudsText>
-          <HighLowText>
-            H:{weatherData?.forecast.forecastday[0].day[celsius ? 'maxtemp_c' : 'maxtemp_f']}° L:
-            {weatherData?.forecast.forecastday[0].day[celsius ? 'mintemp_c' : 'mintemp_f']}°
-          </HighLowText>
-        </TopContainer>
-        {/* <Button onPress={goToLocations} color='white' title='Locations' />
-        <Button onPress={resetLocations} color='red' title='Reset My Locations' /> */}
-      </AppContainer>
-      {buttonVisible && (
-        <TabBarContainer activeOpacity={0.7} onPress={goToLocations}>
-          <TabBar source={require('@app/assets/tabBar1.png')} resizeMode='cover' />
-        </TabBarContainer>
-      )}
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={0}
-        snapPoints={snapPoints}
-        onChange={handleSheetChanges}
-        backgroundStyle={{ backgroundColor: 'rgba(72, 49, 157, 1)', borderRadius: rw(8) }}
-        handleIndicatorStyle={{ padding: rw(0.7) }}
-        backdropComponent={() => <BlurView intensity={20} />}
-      >
+      <AppContainer gradientBackground>
+        <View style={styles.iconsContainer}>
+          <Entypo name='chevron-left' size={30} color='white' onPress={goBack} />
+        </View>
+
         <BottomSheetContainer>
           <ForeCastTextContainer>
             <ForecastText
@@ -259,7 +170,7 @@ function HomeScreen({ navigation: { navigate } }: any) {
             </View>
           </ScrollView>
         </BottomSheetContainer>
-      </BottomSheet>
+      </AppContainer>
     </>
   );
 }
@@ -270,12 +181,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
     flex: 1,
     gap: 20,
   },
+  iconsContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: '5%',
+    paddingVertical: 0,
+    margin: 0,
+    marginBottom: 20,
+  },
 });
 
-export interface HomeScreenProps {}
+export interface WeatherInfoScreenProps {}
 
-export default HomeScreen;
+export default WeatherInfoScreen;
