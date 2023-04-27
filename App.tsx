@@ -3,7 +3,8 @@ import { useLoadFonts } from '@app/hooks/useLoadFonts';
 import { useStoreCurrentCity } from '@app/hooks/useStoreCurrentCity';
 import HomeScreen, { HomeScreenProps } from '@app/screens/HomeScreen';
 import LocationsScreen, { LocationsScreenProps } from '@app/screens/LocationsScreen';
-import { HOME_SCREEN, LOCATIONS_SCREEN } from '@app/screens/ScreenNames';
+import { HOME_SCREEN, INFO_SCREEN, LOCATIONS_SCREEN } from '@app/screens/ScreenNames';
+import WeatherInfoScreen, { WeatherInfoScreenProps } from '@app/screens/WeatherInfoScreen';
 import { navigationRef, setScreenRef } from '@app/services/Navigation';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -15,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export type RootStackProps = {
   HOME_SCREEN: HomeScreenProps;
   LOCATIONS_SCREEN: LocationsScreenProps;
+  INFO_SCREEN: WeatherInfoScreenProps;
 };
 
 const Stack = createNativeStackNavigator<RootStackProps>();
@@ -41,6 +43,13 @@ export default function App() {
           <Stack.Screen
             name={LOCATIONS_SCREEN}
             component={LocationsScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name={INFO_SCREEN}
+            component={WeatherInfoScreen}
             options={{
               headerShown: false,
             }}

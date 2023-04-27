@@ -1,11 +1,12 @@
 import { LocationWeather } from '@app/api/LocationService';
-import { useLocationsStore } from '@app/store/GlobalState';
+import { useGlobalStore, useLocationsStore } from '@app/store/GlobalState';
 import * as React from 'react';
 import { Alert, Keyboard, StyleSheet, Text, View } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
 import WeatherIcon from './WeatherIcon';
+import RootNavigation from '@app/services/Navigation';
 
 const Card = (props: any) => (
   <Svg
@@ -40,6 +41,8 @@ const Card = (props: any) => (
 const LocationCard = ({ location }: { location: LocationWeather }) => {
   const removeLocation = useLocationsStore((state) => state.removeLocation);
 
+  const setSelectedCity = useGlobalStore((state) => state.setSelectedCity);
+
   const celsius = useLocationsStore((state) => state.celsius);
 
   const handleRemove = () => {
@@ -48,6 +51,8 @@ const LocationCard = ({ location }: { location: LocationWeather }) => {
 
   const goToLocationDetails = () => {
     // TODO: navigate to location details screen
+    setSelectedCity(location.name);
+    RootNavigation.navigate('INFO_SCREEN', { location: location.name });
   };
 
   const handleLongPress = () => {
@@ -76,10 +81,7 @@ const LocationCard = ({ location }: { location: LocationWeather }) => {
         <Card />
 
         <View style={{ position: 'absolute', zIndex: 1, top: 0, right: 10 }}>
-          <WeatherIcon
-            size={120}
-            condition={location.weather?.current.condition.text ?? 'Unknown'}
-          />
+          <WeatherIcon size={120} condition={location.weather?.current.condition.text ?? 'Sunny'} />
         </View>
 
         <View style={{ position: 'absolute', zIndex: 1, top: 25, left: 20 }}>
