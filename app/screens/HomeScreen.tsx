@@ -87,15 +87,15 @@ const ForecastContainer = styled.ScrollView`
 const ForecastCapsule = styled.View`
   flex-direction: column;
   justify-content: space-between;
-  margin-horizontal: ${rw(3)}px;
-  width: ${rw(14)}px;
+  margin-horizontal: ${rw(2.5)}px;
+  width: ${rw(15)}px;
   aspect-ratio: 1/2.3;
   background-color: #2f2161;
   border-radius: 100px;
-  padding-vertical: ${rw(2.5)}px;
+  padding-vertical: ${rw(5)}px;
   align-items: center;
   border-color: white;
-  border-width: 0.2px; 
+  border-width: 0.2px;
 `;
 
 const ForecastTitleText = styled.Text`
@@ -103,6 +103,8 @@ const ForecastTitleText = styled.Text`
   color: white;
   font-weight: bold;
 `;
+
+const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function HomeScreen({ navigation: { navigate } }: any) {
   const [buttonVisible, setButtonVisible] = useState(true);
@@ -196,9 +198,29 @@ function HomeScreen({ navigation: { navigate } }: any) {
               ? weatherData?.forecast.forecastday[0].hour.map((hourWData, index) => {
                   return (
                     <ForecastCapsule key={index}>
-                      <ForecastTitleText>{hourWData.time.slice(-4)}</ForecastTitleText>
+                      <ForecastTitleText>{hourWData.time.slice(-5)}</ForecastTitleText>
+                      {weatherData?.current.condition && (
+                        <WeatherIcon condition={hourWData.condition.text} size={40} />
+                      )}
                       <ForecastTitleText>
                         {celsius ? hourWData.temp_c : hourWData.temp_f}
+                      </ForecastTitleText>
+                    </ForecastCapsule>
+                  );
+                })
+              : null}
+            {forecast === 'daily'
+              ? weatherData?.forecast.forecastday.map((forecastDay, index) => {
+                  return (
+                    <ForecastCapsule key={index}>
+                      <ForecastTitleText>
+                        {days[new Date(forecastDay.date).getDay()].slice(0, 3)}
+                      </ForecastTitleText>
+                      {weatherData?.current.condition && (
+                        <WeatherIcon condition={forecastDay.day.condition.text} size={40} />
+                      )}
+                      <ForecastTitleText>
+                        {celsius ? forecastDay.day.avgtemp_c : forecastDay.day.avgtemp_c}
                       </ForecastTitleText>
                     </ForecastCapsule>
                   );
