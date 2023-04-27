@@ -40,6 +40,8 @@ const Card = (props: any) => (
 const LocationCard = ({ location }: { location: LocationWeather }) => {
   const removeLocation = useLocationsStore((state) => state.removeLocation);
 
+  const celsius = useLocationsStore((state) => state.celsius);
+
   const handleRemove = () => {
     removeLocation(location.name);
   };
@@ -81,13 +83,20 @@ const LocationCard = ({ location }: { location: LocationWeather }) => {
         </View>
 
         <View style={{ position: 'absolute', zIndex: 1, top: 25, left: 20 }}>
-          <Text style={styles.temp}>{location.weather?.current.temp_c ?? 'N/A'}°</Text>
+          <Text style={styles.temp}>
+            {location.weather?.current[celsius ? 'temp_c' : 'temp_f'] ?? 'N/A'}°
+          </Text>
         </View>
 
         <View style={{ position: 'absolute', zIndex: 1, bottom: 35, left: 20 }}>
           <Text style={styles.range}>
-            H:{location.weather?.forecast.forecastday[0].day.maxtemp_c ?? 'N/A'}° L:
-            {location.weather?.forecast.forecastday[0].day.mintemp_c ?? 'N/A'}°
+            H:
+            {location.weather?.forecast.forecastday[0].day[celsius ? 'maxtemp_c' : 'maxtemp_f'] ??
+              'N/A'}
+            ° L:
+            {location.weather?.forecast.forecastday[0].day[celsius ? 'mintemp_c' : 'mintemp_f'] ??
+              'N/A'}
+            °
           </Text>
           <Text style={styles.item}>{location.name}</Text>
         </View>

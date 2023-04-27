@@ -3,8 +3,9 @@ import { WeatherService } from '@app/api/WeatherService';
 import AppContainer from '@app/components/layout/AppContainer';
 import LocationCard from '@app/components/ui/LocationCard';
 import useDebounce from '@app/hooks/useDebounce';
+import { rf, rw } from '@app/settings/theme/Layout';
 import { useLocationsStore } from '@app/store/GlobalState';
-import { Entypo } from '@expo/vector-icons';
+import { Entypo, Feather } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -19,6 +20,7 @@ import {
   View,
   TouchableWithoutFeedback,
 } from 'react-native';
+import styled from 'styled-components/native';
 
 const LocationList = ({ locations }: any) => {
   return <FlatList data={locations} renderItem={({ item }) => <LocationCard location={item} />} />;
@@ -87,12 +89,36 @@ const MyLocations = () => {
   );
 };
 
+const ToolTip = styled.View`
+  width: ${rw(40)}px;
+  height: ${rw(20)}px;
+  background-color: rgba(20, 20, 20, 0.8);
+  position: absolute;
+  z-index: 2;
+  padding: 10px;
+  right: ${rw(15)}px;
+  top: ${rw(20)}px;
+  border-radius: ${rw(5)}px;
+  border-top-right-radius: 0;
+`;
+
+const MenuOption = styled.TouchableOpacity`
+  margin-vertical: ${rw(1.8)}px;
+`;
+
 function LocationsScreen({ navigation: { goBack } }: any) {
   const [locations, setLocations] = useState<any[]>([]);
   const [search, setSearch] = useState<string | undefined>(undefined);
   const [searchMode, setSearchMode] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
   const addLocation = useLocationsStore((state) => state.addLocation);
+
+  const { celsius, toggleCelsius } = useLocationsStore((state) => ({
+    celsius: state.celsius,
+    toggleCelsius: state.toggleCelsius,
+  }));
+
+  const [menuVisible, setMenuVisible] = useState<boolean>(false);
 
   const handleAdd = (location: any) => {
     addLocation(location);
@@ -140,9 +166,37 @@ function LocationsScreen({ navigation: { goBack } }: any) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
+      {menuVisible && (
+        <ToolTip>
+          <MenuOption
+            onPress={() => {
+              if (!celsius) toggleCelsius();
+              setMenuVisible(false);
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: rf(1.8) }}>Celsius</Text>
+          </MenuOption>
+          <MenuOption
+            onPress={() => {
+              if (celsius) toggleCelsius();
+              setMenuVisible(false);
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: rf(1.8) }}>Fahrenheit</Text>
+          </MenuOption>
+        </ToolTip>
+      )}
       <AppContainer gradientBackground>
         <View style={{ flex: 1 }}>
-          <Entypo name='chevron-left' size={30} color='white' onPress={goBack} />
+          <View style={styles.iconsContainer}>
+            <Entypo name='chevron-left' size={30} color='white' onPress={goBack} />
+            <Feather
+              name='more-horizontal'
+              size={24}
+              color='white'
+              onPress={() => setMenuVisible((old) => !old)}
+            />
+          </View>
           <View style={styles.inner}>
             <TextInput
               onFocus={() => setSearchMode(true)}
@@ -172,6 +226,14 @@ function LocationsScreen({ navigation: { goBack } }: any) {
 }
 
 const styles = StyleSheet.create({
+  iconsContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: '5%',
+    paddingVertical: 0,
+    margin: 0,
+  },
   container: {
     flex: 1,
     flexGrow: 1,

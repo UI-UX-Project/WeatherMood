@@ -7,6 +7,9 @@ interface GlobalState {
   setSelectedCity: (city: string) => void;
   currentCity: string;
   setCurrentCity: (city: string) => void;
+
+  currentLocation: { lat: number; lon: number };
+  setCurrentLocation: ({ lat, lon }: { lat: number; lon: number }) => void;
 }
 
 export const useGlobalStore = create<GlobalState>((set) => ({
@@ -18,6 +21,13 @@ export const useGlobalStore = create<GlobalState>((set) => ({
   setCurrentCity: (city: string) => {
     set(() => ({ currentCity: city }));
   },
+
+  currentLocation: { lat: 0, lon: 0 },
+  setCurrentLocation: (data) => {
+    set(() => ({
+      currentLocation: data,
+    }));
+  },
 }));
 
 type LocationsState = {
@@ -27,11 +37,18 @@ type LocationsState = {
   addLocation: (locations: any) => void;
   removeLocation: (locationName: string) => void;
   resetLocations: () => void;
+
+  celsius: boolean;
+  toggleCelsius: () => void;
 };
 
 export const useLocationsStore = create(
   persist<LocationsState>(
     (set, get) => ({
+      celsius: true,
+      toggleCelsius: () => {
+        set((state) => ({ celsius: !state.celsius }));
+      },
       _hasHydrated: false,
       setHasHydrated: (state) => {
         set({

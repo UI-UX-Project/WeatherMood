@@ -13,7 +13,7 @@ export class WeatherService {
 
   static async getWeather(q: string) {
     return this.api.get<WeatherData>(
-      this.url + `?q=${q}`,
+      this.url + `?q=${q}&days=3`,
       {},
       {
         headers: {

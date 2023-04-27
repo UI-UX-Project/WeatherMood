@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 export const useStoreCurrentCity = () => {
   const [ready, setReady] = useState<null | 'ready' | 'error'>(null);
   const setCurrentCity = useGlobalStore((state) => state.setCurrentCity);
+  const setCurrentLocation = useGlobalStore((state) => state.setCurrentLocation);
 
   useEffect(() => {
     (async function () {
@@ -19,6 +20,7 @@ export const useStoreCurrentCity = () => {
         });
 
         const { latitude, longitude } = currentLocation.coords;
+        setCurrentLocation({ lon: longitude, lat: latitude });
         const res = await ReverseGeocodingService.getCityName({ latitude, longitude });
 
         if (!res.ok) return setReady('error');
